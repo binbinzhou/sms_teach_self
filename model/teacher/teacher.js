@@ -1,0 +1,34 @@
+loadTeacherData([{
+	"teacherId":"001",
+	"teacherName":"Larry",
+	"teacherExp":"一年",
+	"teacherSalary":"6000",
+	"teacherlevel":"B",	
+},{
+	"teacherId":"002",
+	"teacherName":"Terry",
+	"teacherExp":"二年",
+	"teacherSalary":"7000",
+	"teacherlevel":"B+",	
+},{
+	"teacherId":"003",
+	"teacherName":"Marry",
+	"teacherExp":"三年",
+	"teacherSalary":"8000",
+	"teacherlevel":"A",	
+}
+,{
+	"teacherId":"004",
+	"teacherName":"Horry",
+	"teacherExp":"四年",
+	"teacherSalary":"9000",
+	"teacherlevel":"A+",	
+},
+{
+	"teacherId":"005",
+	"teacherName":"Eorry",
+	"teacherExp":"五年",
+	"teacherSalary":"10000",
+	"teacherlevel":"A+",	
+}
+])

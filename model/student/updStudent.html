@@ -1,0 +1,142 @@
+<style type="text/css">
+h2{
+	margin:10px 0;
+}
+.return{
+	position:absolute;
+	right:20px;
+	top:20px;
+	font-weight:bold;
+	background-color:#ddd;
+	padding:3px 6px;
+}
+</style>
+<script type="text/javascript">
+	//将班级信息数据加载到下拉框中，用一个方法封装起来
+	function loadClazzToSelect(){
+		var url = "http://127.0.0.1:80/web1601/sms_teach_self/model/clazz/clazz.json";
+		/*
+		//获取数据方法一，因为班级信息选项卡也要获取数据、json文件中开头名字loadClazz(),其实是函数的调用，把文件当做参数传递进来
+		$.get(url,function(data){
+			//将select中的option清空
+			$("select[name='clazzId']").children(":gt(0)").remove();
+			data.forEach(function(item){
+				var newOpt = $("<option value='"+item.clazzId+"'>"+item.clazzName+"</option>");
+				$("select[name='clazzId']").append(newOpt);
+			});
+			
+		});*/
+		$.ajax(url,{								
+				dataType:"jsonp",
+				jsonp:"jsonp",
+				jsonpCallback:"loadClazz",
+			});
+		
+	}
+	//封装加载班级信息到下拉框
+	function loadClazz(data){
+		//console.log(data);
+		$("select[name='clazzId']").children(":gt(0)").remove();
+			data.forEach(function(item){
+				var newOpt = $("<option value='"+item.clazzId+"'>"+item.clazzName+"</option>");
+				$("select[name='clazzId']").append(newOpt);
+			});
+	}
+
+	$(function(){
+		//调用上面封装的方法加载班级信息到下拉框中
+		loadClazzToSelect();
+		//为返回按钮添加返回事件
+		$(".return").off("click");
+		$(".return").click(function(){
+			$(".tab_content").load("model/student/tab_student.html");
+		});
+		//绑定表单事件之前先将表单事件解绑
+		$("form[name='updStuForm']").off("submit");
+		//表单绑定用submit
+		$("form[name='updStuForm']").submit(function(event){
+			var url = "http://127.0.0.1:80/web1601/sms/updStuent";
+			//先定义变量来获取用户输入的值，这里只要模拟是否获取到用户输入的值，打印在控制台
+			var name = $(":text[name='name']").val();
+			var clazzId = $("select[name='clazzId']").val();
+			var gender = $(":radio[name='gender']").val();
+			var score = $(":text[name='score']").val();
+			
+			//把获取数据中的参数用data变量来存储，
+			var data = {
+					name:name,
+					clazzId:clazzId,
+					gender:gender,				
+					score:score
+			};
+			console.log(data);
+			//获取用户输入的值，选择post方式
+			$.ajax(url,{								
+				dataType:"jsonp",			
+				data:data,	//第一个data是属性名，第二个是定义来存储参数的变量，也就是属性值
+				jsonp:"jsonp",
+				jsonpCallback:"handler",
+				success:function(){
+					alert("保存成功");
+					//当添加完成之后点击保存数据之后要让表单的数据清空，这里的reset()是DOM的方法，所以在获取值的后面加[0]就是获取第一个dom元素
+					$("form[name='updStuForm']")[0].reset();					
+				},
+				error:function(){
+					alert("后台接口还未完善，数据已打印在控制台");
+					//当后台接口写好之后提交就会保存成功。
+				}
+			});
+			//阻止表单默认行为方法一，
+			event.preventDefault();
+			//阻止表单默认行为方法二
+			//return false;
+		});
+	});
+	//保存用户输入的数据的方法
+	function handler(data){
+		console.log(data);
+	}
+</script>
+<div class="inner">
+    <h2>修改学生信息</h2>
+    <a href="javascript:void(0)" class="return">返回</a>
+    <form action="" method="post" name="updStuForm">
+    	<table>  
+            <tbody>
+                <tr>
+                    <td>姓名</td>
+                    <td>
+                        <input type="text" name="name">
+                    </td>
+                </tr>
+                <tr>
+                    <td>班级</td>
+                    <td>
+                        <select name="clazzId" id="">
+                            <option value="">-请选择-</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>性别</td>
+                    <td>
+                        男<input type="radio" name="gender" value="男" checked="checked">
+                        女<input type="radio" name="gender" value="女">
+                    </td>
+                </tr>
+                <tr>
+                    <td>分数</td>
+                    <td>
+                        <input type="text" name="score">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <input type="submit" value="保存">
+                        <input type="reset"	value="重置">
+                    </td>
+                </tr>
+       		</tbody>  
+    	</table>
+    </form>
+</div>

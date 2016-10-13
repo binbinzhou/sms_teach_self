@@ -1,0 +1,118 @@
+<script type="text/javascript">
+$(function(){
+	//为返回按钮添加返回事件
+	$(".return").off("click");
+	$(".return").click(function(){
+		$(".tab_content").load("model/teacher/tab_teacher.html");
+	});
+	//绑定表单事件之前先将表单事件解绑
+		$("form[name='updTeaForm']").off("submit");
+		//表单绑定用submit
+		$("form[name='updTeaForm']").submit(function(event){
+			var url = "http://127.0.0.1:80/web1601/sms/updTeacher";
+			//先定义变量来获取用户输入的值，这里只要模拟是否获取到用户输入的值，打印在控制台
+			var name = $(":text[name='name']").val();
+			var Exp = $(":text[name='Exp']").val();
+			var salary = $(":text[name='salary']").val();
+			
+			//把获取数据中的参数用data变量来存储，
+			var data = {
+					name:name,
+					Exp:Exp,
+					salary:salary
+			};
+			console.log(data);
+			//获取用户输入的值，选择post方式
+			$.ajax(url,{								
+				dataType:"jsonp",			
+				data:data,	//第一个data是属性名，第二个是定义来存储参数的变量，也就是属性值
+				jsonp:"jsonp",
+				jsonpCallback:"handler",
+				success:function(){
+					alert("保存成功");
+					//当添加完成之后点击保存数据之后要让表单的数据清空，这里的reset()是DOM的方法，所以在获取值的后面加[0]就是获取第一个dom元素
+					$("form[name='updTeaForm']")[0].reset();					
+				},
+				error:function(){
+					alert("后台接口还未完善，数据已打印在控制台");
+					//当后台接口写好之后提交就会保存成功。
+				}
+			});
+			//阻止表单默认行为方法一，
+			event.preventDefault();
+			//阻止表单默认行为方法二
+			//return false;
+		});	
+});
+function handler(data){
+		console.log(data);
+	}
+</script>
+
+<style type="text/css">
+h2{
+	margin:10px 0;
+}
+.return{
+	position:absolute;
+	right:20px;
+	top:20px;
+	font-weight:bold;
+	background-color:#ddd;
+	padding:3px 6px;
+}
+</style>
+<div class="inner">
+    <h2>修改教师信息</h2>
+    <a href="javascript:void(0)" class="return">返回</a>
+    <form action="" method="post" name="updTeaForm">
+    	<table>  
+            <tbody>
+                <tr>
+                    <td>姓名</td>
+                    <td>
+                        <input type="text" name="name">
+                    </td>
+                </tr>
+                 <tr>
+                    <td>性别</td>
+                    <td>
+                        男<input type="radio" name="gender" value="男" checked="checked">&nbsp;
+                        女<input type="radio" name="gender" value="女">
+                    </td>
+                </tr>
+                <tr>
+                    <td>工龄</td>
+                    <td>
+                        <input type="text" name="Exp">
+                    </td>
+                </tr>
+                <tr>
+                    <td>薪资</td>
+                    <td>
+                        <input type="text" name="salary">
+                    </td>
+                </tr>
+                <tr>
+                    <td>等级</td>
+                    <td>
+                        <select name="teacherlevel" id="">
+                            <option value="">-请选择-</option>
+                            <option value="">A+</option>
+                            <option value="">A-</option>
+                            <option value="">A</option>
+                            <option value="">B</option>
+                        </select>
+                    </td>
+                </tr>
+                              
+                <tr>
+                    <td colspan="2">
+                        <input type="submit" value="保存">
+                        <input type="reset"	value="重置">
+                    </td>
+                </tr>
+       		</tbody>  
+    	</table>
+    </form>
+</div>

@@ -1,0 +1,150 @@
+<style type="text/css">
+h2{
+	margin:10px 0;
+}
+.return{
+	position:absolute;
+	right:20px;
+	top:20px;
+	font-weight:bold;
+	background-color:#ddd;
+	padding:3px 6px;
+}
+</style>
+<script type="text/javascript">
+//利用jsonp获取下拉框中班级的信息
+function loadClazzToSelect(data){
+	data = data||{};
+	var url = "http://127.0.0.1:80/web1601/sms_teach_self/model/clazz/clazz.js";
+	$.ajax(url,{
+		dataType:"jsonp",
+		jsonp:"jsonp",
+		jsonpCallback:"loadClazz"
+	});
+}
+function loadClazz(data){
+	//console.log(data);
+	$("select[name='clazzName']").children(":gt(0)").remove();
+	data.forEach(function(item){
+		var newOpt=$("<option value='"+item.clazzId+"'>"+item.clazzName+"</option>");
+		$("select[name='clazzName']").append(newOpt);
+	});
+}
+
+//利用jsonp获取下拉框中班级的信息
+function loadTeacherToSelect(data){
+	data = data||{};
+	var url = "http://127.0.0.1:80/web1601/sms_teach_self/model/teacher/teacher.js";
+	$.ajax(url,{
+		dataType:"jsonp",
+		jsonp:"jsonp",
+		jsonpCallback:"loadTeacherData"
+	});
+}
+function loadTeacherData(data){
+	//console.log(data);
+	$("select[name='teacherId']").children(":gt(0)").remove();
+	data.forEach(function(item){
+		var newOpt=$("<option value='"+item.teacherId+"'>"+item.teacherName+"</option>");
+		$("select[name='teacherId']").append(newOpt);
+	});
+}
+
+$(function(){
+	loadClazzToSelect();
+	loadTeacherToSelect();
+	
+	//添加返回按钮事件
+	$(".return").off("click");
+	$(".return").click(function(){
+		$(".tab_content").load("model/clazz/tab_clazz.html");
+	})
+	
+	//为提交按钮绑定事件
+	$("form[name='addClaForm']").off("submit");
+	$("form[name='addClaForm']").submit(function(event){
+			var url = "http://127.0.0.1:80/sms/addClaForm";
+			var clazzName = $("select[name='clazzName']").val();
+			var nums = $(":text[name='nums']").val();
+			var teacherId = $("select[name='teacherId']").val();
+			var monitor = $(":text[name='monitor']").val();
+			//把获取数据中的参数用data变量来存储，
+			var data = {
+					clazzName:clazzName,
+					nums:nums,
+					teacherId:teacherId,				
+					monitor:monitor
+			};
+			console.log(data);
+			//获取用户输入的值，选择post方式
+			$.ajax(url,{				
+				dataType:"jsonp",			
+				data:data,
+				jsonp:"jsonp",
+				jsonpCallback:"handler",
+				success:function(){
+					alert("保存成功");
+					$("form[name='addClaForm']")[0].reset();					
+				},
+				error:function(){
+					alert("后台接口还未完善，提交的数据已打印在控制台");
+					//当后台接口写好之后提交就会保存成功。
+				}
+			});
+			//阻止表单默认行为方法一，
+			//event.preventDefault();
+			//阻止表单默认行为方法二
+			return false;
+	});	
+});
+
+//jsonp回调函数
+function handler(data){
+	console.log(data);
+}
+</script>
+
+<div class="inner">
+    <h2>录入班级信息</h2>
+    <a href="javascript:void(0)" class="return">返回</a>
+    <form action="" method="post" name="addClaForm">
+    	<table>  
+            <tbody>
+                <tr>
+                    <td>班级名称</td>
+                    <td>
+                        <select name="clazzName" id="">
+                            <option value="">-请选择-</option>
+                        </select>
+                    </td
+                ></tr>
+                <tr>
+                    <td>班级人数</td>
+                    <td>
+                        <input type="text" name="nums">
+                    </td>
+                </tr>
+                <tr>
+                    <td>班主任</td>
+                    <td>
+                        <select name="teacherId" id="">
+                            <option value="">-请选择-</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>班长</td>
+                    <td>
+                        <input type="text" name="monitor">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <input type="submit" value="保存">
+                        <input type="reset"	value="重置">
+                    </td>
+                </tr>
+       		</tbody>  
+    	</table>
+    </form>
+</div>

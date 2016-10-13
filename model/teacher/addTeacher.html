@@ -1,0 +1,132 @@
+<script type="text/javascript">
+$(function(){
+	loadClazzToSelect();
+	
+	//添加返回按钮事件
+	$(".return").off("click");
+	$(".return").click(function(){
+		$(".tab_content").load("model/teacher/tab_teacher.html");
+	});
+	
+	//添加保存按钮事件
+	$("form[name='addTeaForm']").off("submit");
+	$("form[name='addTeaForm']").submit(function(){
+		var url = "http://127.0.0.1:80/sms/addTeacher";
+		//定义变量来获取用户输入的值
+		var name = $(":text[name='name']").val();
+		var gender=$(":radio:checked").map(function(index,item){
+						return item.value;
+					}).get().join();		
+		var salary = $(":text[name='salary']").val();
+		var clazzId = $("select[name='clazzId']").val();	
+		//存储在一个data参数对象中	
+		var data = {
+			name:name,
+			gender:gender,
+			salary:salary,
+			clazzId:clazzId
+		};
+		console.log(data);
+		$.ajax(url,{
+			dataType:"jsonp",
+			data:data,
+			jsonp:"jsonp",
+			jsonpCallback:"handler",
+			success: function(){
+				alert("保存成功!");
+				$("form[name='addTeaForm']")[0].reset();
+			},
+			error:function(){
+				alert("后台接口还未完善，数据已打印在控制台!");
+			}
+		});		
+		//阻止表单默认提交
+		return false;
+	});
+	
+	
+});
+//保存用户输入的数据的jsonp回调函数
+function handler(data){
+	console.log(data);
+}
+
+//利用jsonp获取下拉框中班级的信息
+function loadClazzToSelect(data){
+	data = data||{};
+	var url = "http://127.0.0.1:80/web1601/sms_teach_self/model/clazz/clazz.js";
+	$.ajax(url,{
+		dataType:"jsonp",
+		jsonp:"jsonp",
+		jsonpCallback:"loadClazz"
+	});
+}
+
+function loadClazz(data){
+	//console.log(data);
+	//这里的:gt()过滤器有点问题！！！
+	$("select[name='clazzId']").children(":gt(1)").remove();
+	data.forEach(function(item){
+		var newOpt=$("<option value='"+item.clazzId+"'>"+item.clazzName+"</option>");
+		$("select[name='clazzId']").append(newOpt);
+	});
+}
+</script>
+
+<style type="text/css">
+h2{
+	margin:10px 0;
+}
+.return{
+	position:absolute;
+	right:20px;
+	top:20px;
+	font-weight:bold;
+	background-color:#ddd;
+	padding:3px 6px;
+}
+</style>
+<div class="inner">
+    <h2>录入教师信息</h2>
+    <a href="javascript:void(0)" class="return">返回</a>
+    <form action="" method="post" name="addTeaForm">
+    	<table>  
+            <tbody>
+                <tr>
+                    <td>姓名</td>
+                    <td>
+                        <input type="text" name="name">
+                    </td>
+                </tr>
+                 <tr>
+                    <td>性别</td>
+                    <td>
+                        男<input type="radio" name="gender" value="男" checked="checked">&nbsp;
+                        女<input type="radio" name="gender" value="女">
+                    </td>
+                </tr>
+                 <tr>
+                    <td>薪资</td>
+                    <td>
+                        <input type="text" name="salary">
+                    </td>
+                </tr>
+                <tr>
+                    <td>班级</td>
+                    <td>
+                        <select name="clazzId" id="">
+                            <option value="">-请选择-</option>
+                        </select>
+                    </td>
+                </tr>
+                              
+                <tr>
+                    <td colspan="2">
+                        <input type="submit" value="保存">
+                        <input type="reset"	value="重置">
+                    </td>
+                </tr>
+       		</tbody>  
+    	</table>
+    </form>
+</div>

@@ -1,0 +1,196 @@
+<script type="text/javascript">
+	$(function(){
+		//调用获取$.ajax获取数据的方法
+		loadData();
+		
+		//全选绑定事件,添加change事件，相似三级联动的下拉框选择，判断最下面的checkbox是否有checked属性，如果有就给表格上面td中的所有checkbox加上checked属性
+		$(".opt_btns :checkbox").off("change");
+		//绑定事件之前都要先取消事件，off里面传表示取消那个事件，不传的话就取消该元素绑定的全部的事件
+		$(".opt_btns :checkbox").change(function(){
+			if($(this).prop("checked")){
+				//这里加一个:visible过滤器是选中所有占据屏幕空间的复选框，因为有一个是隐藏的母体是不占据空间的，必须排除这个
+				$("#stuTbl td :checkbox:visible").prop("checked",true);
+			} else{
+				$("#stuTbl td :checkbox:visible").prop("checked",false);
+			}
+		});
+		
+		//添加按钮的事件
+		$(".opt_btns button").click(function(){
+			//定义一个变量来获取当前点击的按钮的文字
+			var opt = $(this).text();
+			//console.log(opt);
+			switch(opt){
+				case "添加":
+					$(".tab_content").load("model/student/addStudent.html");
+				break;
+				case "修改":
+					//获取要修改学生的id，map()是jQuery对象的方法，get(0)是转化为数组并取得数组中的第一个元素，因为修改只能修改一个，若多选则默认修改第一个
+					var id=$("#stuTbl :checkbox:checked").map(function(index,item){
+						return item.value;
+					}).get(0);
+					if(id){
+						var stu ;
+						$.ajax("model/student/updStudent.json",{
+							async:"false",
+							success: function(data){							
+								stu = data;
+							}
+						});
+						$(".tab_content").load("model/student/updStudent.html",function(){
+							console.log("---初始化修改用户的信息----");							
+							$(":text[name='name']").val(stu.name);							
+							$(":text[name='score']").val(stu.score);
+							//$("select[name='clazzId']").val(2001);
+							//$(":radio[name='gender']").val();
+							console.log(stu);
+						});
+					} else {
+						alert("请先选择要修改的学生");
+					}					
+				break;
+				case "删除":
+					//获取要删除学生的id，map()是jQuery对象的方法，get()是转化为一个数组，因为删除可以一下删除多个,
+					var ids = $("#stuTbl :checkbox:checked").map(function(index, item) {
+						//console.log(item);
+                        return item.value;
+                    }).get().join();
+					//将获取到的id转化为字符串类型
+					//将获取到的id发送到后台
+					if(ids){
+						var url = "http://127.0.0.1:80/sms/delStudents";
+						$.ajax(url,{
+							dataType:"jsonp",
+							jsonp:"jsonp",
+							data:{ids:ids},
+							jsonpCallback:"aaa",
+							success:function(){
+								alert("删除成功!");
+								//刷新页面
+								loadData();
+							},
+							error:function(){
+								alert("后台接口还未完善，提交的数据ids已打印在网络参数里面!");
+							}							
+						});
+					} else{
+						alert("请选择要删除的学生!");
+					}					
+				break;
+				case "刷新":
+					loadData();
+					$(".opt_btns :checkbox").prop("checked",false);
+					alert("刷新成功！数据在网络中重新获取了一次");
+				break;
+			}
+		});
+	});
+	//为搜索按钮绑定事件	先解绑再绑定
+	$(".search :submit").off("click");
+	$(".search :submit").on("click",function(){
+		var key = $("select[name='search_key']").val();
+		//key的值可能为name,clazz,score
+		var val = $(":text[name='search_val']").val();
+		//获取用户输入的值
+		var data = new Object();
+		//创建对象来保存键值对
+		data[key] = val;
+		console.log(data);
+		alert("你要查询的的数据已打印在控制台!");
+		//把参数传给函数里面，加载数据
+		loadData(data);
+	});
+	
+	//用一个函数把获取学生信息的jsonp封装起来
+	function loadData(data){
+		data = data||{};
+		//利用jsonp跨域获取json数据
+		var url = "http://127.0.0.1:80/web1601/sms_teach_self/model/student/student.js";
+		$.ajax(url,{
+			dataType:"jsonp",
+			jsonp:"jsonp",
+			jsonpCallback:"loadStudent"
+		});
+	}	
+	//jsonp的回调函数，用于处理获取的数据
+	function loadStudent(data){
+		//console.log(data);	//打印测试是否获取到数据
+		//清空tbody原有的数据
+		$("#stuTbl tbody tr").remove(":not(:first)");
+		data.forEach(function(item){
+			//以第一个tr为母体克隆tr出来并且将他的class去掉否则也会隐藏
+			var newTr = $(".hiddenTr").clone().removeClass("hiddenTr");
+			//将从后台获取到的数据填充到克隆出来的tr里面
+			newTr.find(":checkbox").val(item.studentId);
+			newTr.children().eq(1).text(item.studentName);
+			newTr.children().eq(2).text(item.studentClazz);
+			newTr.children().eq(3).text(item.studentGender);
+			newTr.children().eq(4).text(item.studentScore);
+			//将克隆出来并填充好数据的tr追加到table中的tbody中
+			$("#stuTbl tbody").append(newTr);
+			
+			//隔行变色
+			//这里显示的第一行是白色是因为还有一个是隐藏的母体tr,在jQuery隔行变色中第一行是偶数
+			$("tbody>tr:even").addClass("even");
+			$("tbody>tr:odd").addClass("odd");
+			
+		});
+	}
+</script>
+<style type="text/css">
+#stuTbl th{
+	background-color:#DCEBF9;
+	height:25px;
+}
+.hiddenTr{
+	display:none;
+}
+.even{
+	background-color: #ddd;
+}
+.odd{
+	background-color: #fff;
+}
+</style>
+<!-- 学生管理 -->
+			<div class="inner current">
+				<div class="search">
+					<select name="search_key" id="">
+						<option value="name">姓名</option>
+						<option value="clazz">班级</option>
+						<option value="score">成绩</option>
+					</select>
+					<input type="text" name="search_val">
+					<input type="submit" value="search">
+				</div>
+				<table id="stuTbl">
+					<thead>
+						<tr>
+							<th>选择</th>
+							<th>姓名</th>
+							<th>班级</th>
+							<th>性别</th>
+							<th>分数</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="hiddenTr">
+							<td>
+								<input type="checkbox">
+							</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div class="opt_btns">
+					<input type="checkbox">
+					<button>添加</button>
+					<button>修改</button>
+					<button>删除</button>
+                    <button>刷新</button>
+				</div>
+			</div>
